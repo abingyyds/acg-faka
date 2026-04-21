@@ -76,6 +76,30 @@ location / {
 - 配置完成后，访问你的首页，即可开始安装
 - 安装完成后，后台地址是：`https://你的域名/admin`
 
+## Railway 部署
+
+- 本仓库已提供 `Dockerfile`、`Caddyfile` 和启动脚本，Railway 会优先按 Docker 部署。
+- Railway 需要先提供一个可连接的 MySQL 数据库，再启动本项目。
+- 在 Railway Variables 中至少配置：
+  - `DB_HOST`
+  - `DB_PORT`
+  - `DB_NAME`
+  - `DB_USER`
+  - `DB_PASS`
+  - `DB_PREFIX`
+- 如果你直接挂的是 Railway MySQL 插件，也可以不填上面这些，启动脚本会自动兼容：
+  - `MYSQLHOST`
+  - `MYSQLPORT`
+  - `MYSQLDATABASE`
+  - `MYSQLUSER`
+  - `MYSQLPASSWORD`
+- 首次安装时，不要设置 `APP_MARK_INSTALLED=1`，也不要提前写 `APP_INSTALLED_LOCK`。
+- 首次部署成功后，访问首页会进入安装流程，安装完成后应用会自己写入 `kernel/Install/Lock` 和数据库配置。
+- 只有在“数据库已经导入、你只是迁移已有站点”时，才设置：
+  - `APP_MARK_INSTALLED=1`
+  - 或 `APP_INSTALLED_LOCK=任意非空字符串`
+- 这套部署额外处理了伪静态规则，会把路径改写为程序需要的 `index.php?s=/path` 形式。
+
 ## 更多支持
 - 交流QQ群：970103572
 - [Telegram](http://t.me/mcyofficial)

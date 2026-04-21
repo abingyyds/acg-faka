@@ -1,0 +1,14 @@
+{
+    auto_https off
+    admin off
+}
+
+:{$PORT:80} {
+    root * /app
+    encode zstd gzip
+    php_server {
+        root /app
+        try_files {path} {path}/ /index.php?s={path}&{query}
+    }
+    file_server
+}
