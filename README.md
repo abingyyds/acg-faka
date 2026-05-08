@@ -93,6 +93,15 @@ location / {
   - `MYSQLDATABASE`
   - `MYSQLUSER`
   - `MYSQLPASSWORD`
+- 也支持 MySQL URL 形式（常见于变量引用，必须是 `mysql://` 或 `mariadb://`，不是 PostgreSQL）：
+  - `MYSQL_URL`
+  - `DATABASE_URL`
+- 以及带下划线别名：
+  - `MYSQL_HOST`
+  - `MYSQL_PORT`
+  - `MYSQL_DATABASE`
+  - `MYSQL_USER`
+  - `MYSQL_PASSWORD`
 - 首次安装时，不要设置 `APP_MARK_INSTALLED=1`，也不要提前写 `APP_INSTALLED_LOCK`。
 - 首次部署成功后，访问首页会进入安装流程，安装完成后应用会自己写入 `kernel/Install/Lock` 和数据库配置。
 - 只有在“数据库已经导入、你只是迁移已有站点”时，才设置：
