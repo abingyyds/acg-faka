@@ -6,9 +6,28 @@
 :{$PORT:80} {
     root * /app
     encode zstd gzip
-    php_server {
-        root /app
-        try_files {path} {path}/ /index.php?s={path}&{query}
+
+    handle /assets/* {
+        file_server
     }
-    file_server
+
+    handle /favicon.ico {
+        file_server
+    }
+
+    handle / {
+        rewrite * /index.php?{query}
+        php_server {
+            root /app
+            file_server off
+        }
+    }
+
+    handle {
+        rewrite * /index.php?s={path}&{query}
+        php_server {
+            root /app
+            file_server off
+        }
+    }
 }
