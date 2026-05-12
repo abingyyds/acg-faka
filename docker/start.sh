@@ -5,6 +5,17 @@ cd /app
 
 mkdir -p /app/kernel/Install
 
+if [ -n "${RAILWAY_VOLUME_MOUNT_PATH:-}" ]; then
+    mkdir -p "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache"
+    if [ -d /app/assets/cache ] && [ ! -L /app/assets/cache ]; then
+        cp -a /app/assets/cache/. "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache/" 2>/dev/null || true
+        rm -rf /app/assets/cache
+    fi
+    ln -sfn "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache" /app/assets/cache
+else
+    mkdir -p /app/assets/cache
+fi
+
 DB_DRIVER="${DB_DRIVER:-mysql}"
 DB_HOST="${DB_HOST:-${MYSQLHOST:-${MYSQL_HOST:-}}}"
 DB_PORT="${DB_PORT:-${MYSQLPORT:-${MYSQL_PORT:-}}}"
