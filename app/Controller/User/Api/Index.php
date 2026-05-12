@@ -171,7 +171,17 @@ class Index extends User
 
             //如果登录后，则自动计算登录后的价格
             if ($user) {
-                $tradeAmount = $this->order->valuation(commodity: $commodity[$key], group: $userGroup);
+                try {
+                    $tradeAmount = $this->order->valuation(commodity: (int)$val['id'], group: $userGroup);
+                } catch (\Throwable $e) {
+                    error_log(sprintf(
+                        'Commodity list valuation failed: commodity_id=%s, user_id=%s, message=%s',
+                        (string)$val['id'],
+                        (string)$user->id,
+                        $e->getMessage()
+                    ));
+                    $tradeAmount = (string)($val['user_price'] ?: $val['price']);
+                }
                 $data[$key]['price'] = $tradeAmount;
                 $data[$key]['user_price'] = $tradeAmount;
             }

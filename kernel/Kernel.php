@@ -155,6 +155,17 @@ try {
         echo $result;
     }
 } catch (Throwable $e) {
+    if (!$e instanceof \Kernel\Exception\ParameterMissException && !$e instanceof \Kernel\Exception\JSONException) {
+        error_log(sprintf(
+            '[acg-faka] %s %s failed: %s in %s:%d',
+            $_SERVER['REQUEST_METHOD'] ?? '',
+            $_SERVER['REQUEST_URI'] ?? '',
+            get_class($e) . ': ' . $e->getMessage(),
+            $e->getFile(),
+            $e->getLine()
+        ));
+    }
+
     if ($e instanceof NotFoundException) {
         exit(feedback("404 Not Found"));
     } elseif ($e instanceof \Kernel\Exception\ParameterMissException) {
