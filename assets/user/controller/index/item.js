@@ -1,6 +1,6 @@
 !function () {
     const _item = getVar("_var_item");
-    let _price = 0, _available = false;
+    let _price = Number(_item?.login ? _item?.user_price : _item?.price) || 0, _available = false;
     const $vstack = $(`.vstack`), $cashPay = $(`.cash-pay`);
 
     function _getPostData() {

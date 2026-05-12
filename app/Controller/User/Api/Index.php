@@ -312,9 +312,10 @@ class Index extends User
     public
     function valuation(): array
     {
+        $num = max(1, (int)$this->request->post("num"));
         $price = $this->order->valuation(
             commodity: (int)$this->request->post("item_id"),
-            num: (int)$this->request->post("num"),
+            num: $num,
             race: (string)$this->request->post("race"),
             sku: (array)$this->request->post("sku"),
             cardId: (int)$this->request->post("card_id"),
