@@ -109,7 +109,17 @@ location / {
   - 或 `APP_INSTALLED_LOCK=任意非空字符串`
 - Railway 每次重新部署都会重建容器，容器内文件不会持久保存。商品、订单、配置等业务数据必须放在外部 MySQL 中，并且每次部署的 `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASS`/`DB_PREFIX` 必须指向同一套数据库。
 - 如果数据库已经安装过，启动脚本会自动检测 `${DB_PREFIX}config` 表并恢复 `kernel/Install/Lock`，避免重新进入安装流程。不要在已有数据的数据库上再次执行安装，因为安装 SQL 会重建业务表。
-- 上传到 `/assets/cache/...` 的图片和文件需要持久化。建议在 Railway 给本服务创建 Volume；启动脚本会在检测到 Railway 自动注入的 `RAILWAY_VOLUME_MOUNT_PATH` 后，把 `/app/assets/cache` 链接到该 Volume 下的 `assets-cache` 目录。未挂载 Volume 时，Railway 重新部署后历史上传文件仍会丢失，需要重新上传或改用对象存储/CDN。
+- 文件类数据必须给本服务创建 Railway Volume。启动脚本检测到 `RAILWAY_VOLUME_MOUNT_PATH` 后，会把这些运行时路径链接到 Volume：
+  - `/app/assets/cache`：商品图片、分类图片、上传附件。
+  - `/app/app/Plugin`：通用插件安装文件、插件配置。
+  - `/app/app/Pay`：支付插件安装文件、支付插件配置。
+  - `/app/app/View/User/Theme`：安装的主题、主题设置。
+  - `/app/kernel/Install`：安装锁、插件/系统更新临时包。
+  - `/app/config/store.php`：插件市场登录/授权信息。
+  - `/app/config/terms`：后台协议确认状态。
+  - `/app/runtime/mode`：客户端 IP 获取模式。
+  - `/app/favicon.ico`：后台上传的网站图标。
+- 如果这些文件已经只存在于当前 Railway 容器里，先不要重新部署；需要先从当前容器导出或复制到 Volume。没有挂载 Volume 的情况下重新部署，历史上传文件和已安装插件文件仍会丢失。
 - 这套部署额外处理了伪静态规则，会把路径改写为程序需要的 `index.php?s=/path` 形式。
 
 ## 更多支持

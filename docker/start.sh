@@ -3,17 +3,67 @@ set -eu
 
 cd /app
 
-mkdir -p /app/kernel/Install
+copy_missing_dir() {
+    source_dir="$1"
+    target_dir="$2"
+
+    find "${source_dir}" -mindepth 1 | while IFS= read -r source_path; do
+        relative_path="${source_path#"${source_dir}/"}"
+        target_path="${target_dir}/${relative_path}"
+
+        if [ -d "${source_path}" ]; then
+            mkdir -p "${target_path}"
+        elif [ ! -e "${target_path}" ]; then
+            mkdir -p "$(dirname "${target_path}")"
+            cp -a "${source_path}" "${target_path}" 2>/dev/null || true
+        fi
+    done
+}
+
+persist_dir() {
+    app_path="$1"
+    volume_path="${RAILWAY_VOLUME_MOUNT_PATH}/$2"
+
+    mkdir -p "${volume_path}"
+    if [ -d "${app_path}" ] && [ ! -L "${app_path}" ]; then
+        copy_missing_dir "${app_path}" "${volume_path}"
+        rm -rf "${app_path}"
+    elif [ -e "${app_path}" ] && [ ! -L "${app_path}" ]; then
+        rm -rf "${app_path}"
+    fi
+
+    mkdir -p "$(dirname "${app_path}")"
+    rm -f "${app_path}"
+    ln -sfn "${volume_path}" "${app_path}"
+}
+
+persist_file() {
+    app_path="$1"
+    volume_path="${RAILWAY_VOLUME_MOUNT_PATH}/$2"
+
+    mkdir -p "$(dirname "${volume_path}")"
+    if [ -f "${app_path}" ] && [ ! -L "${app_path}" ] && [ ! -e "${volume_path}" ]; then
+        cp -a "${app_path}" "${volume_path}" 2>/dev/null || true
+    fi
+
+    mkdir -p "$(dirname "${app_path}")"
+    rm -f "${app_path}"
+    ln -sfn "${volume_path}" "${app_path}"
+}
 
 if [ -n "${RAILWAY_VOLUME_MOUNT_PATH:-}" ]; then
-    mkdir -p "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache"
-    if [ -d /app/assets/cache ] && [ ! -L /app/assets/cache ]; then
-        cp -a /app/assets/cache/. "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache/" 2>/dev/null || true
-        rm -rf /app/assets/cache
-    fi
-    ln -sfn "${RAILWAY_VOLUME_MOUNT_PATH}/assets-cache" /app/assets/cache
+    mkdir -p "${RAILWAY_VOLUME_MOUNT_PATH}"
+    persist_dir /app/assets/cache assets-cache
+    persist_dir /app/app/Plugin app-plugin
+    persist_dir /app/app/Pay app-pay
+    persist_dir /app/app/View/User/Theme app-user-themes
+    persist_dir /app/kernel/Install kernel-install
+    persist_file /app/config/store.php config/store.php
+    persist_file /app/config/terms config/terms
+    persist_file /app/runtime/mode runtime/mode
+    persist_file /app/favicon.ico favicon.ico
 else
-    mkdir -p /app/assets/cache
+    mkdir -p /app/assets/cache /app/app/Plugin /app/kernel/Install /app/runtime
 fi
 
 DB_DRIVER="${DB_DRIVER:-mysql}"

@@ -7,11 +7,24 @@
     root * /app
     encode zstd gzip
 
+    @dynamicSource {
+        path_regexp dynamic_source ^/app/(Plugin|View/User/Theme)/.*\.php$
+    }
+    respond @dynamicSource 404
+
     handle /assets/* {
         file_server
     }
 
     handle /favicon.ico {
+        file_server
+    }
+
+    handle /app/Plugin/* {
+        file_server
+    }
+
+    handle /app/View/User/Theme/* {
         file_server
     }
 
