@@ -107,4 +107,28 @@ elif [ "${APP_MARK_INSTALLED:-0}" = "1" ] && [ ! -f /app/kernel/Install/Lock ]; 
     printf "railway" > /app/kernel/Install/Lock
 fi
 
+if [ ! -f /app/kernel/Install/Lock ]; then
+    if php -r '
+        $host = getenv("DB_HOST");
+        $port = getenv("DB_PORT") ?: "3306";
+        $db = getenv("DB_NAME");
+        $user = getenv("DB_USER");
+        $pass = getenv("DB_PASS");
+        $prefix = getenv("DB_PREFIX") ?: "acg_";
+
+        try {
+            $pdo = new PDO("mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4", $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            ]);
+            $stmt = $pdo->prepare("SHOW TABLES LIKE ?");
+            $stmt->execute([$prefix . "config"]);
+            exit($stmt->fetchColumn() ? 0 : 1);
+        } catch (Throwable $e) {
+            exit(1);
+        }
+    '; then
+        printf "railway" > /app/kernel/Install/Lock
+    fi
+fi
+
 exec frankenphp run --config /etc/caddy/Caddyfile

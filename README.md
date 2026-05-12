@@ -107,6 +107,9 @@ location / {
 - 只有在“数据库已经导入、你只是迁移已有站点”时，才设置：
   - `APP_MARK_INSTALLED=1`
   - 或 `APP_INSTALLED_LOCK=任意非空字符串`
+- Railway 每次重新部署都会重建容器，容器内文件不会持久保存。商品、订单、配置等业务数据必须放在外部 MySQL 中，并且每次部署的 `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASS`/`DB_PREFIX` 必须指向同一套数据库。
+- 如果数据库已经安装过，启动脚本会自动检测 `${DB_PREFIX}config` 表并恢复 `kernel/Install/Lock`，避免重新进入安装流程。不要在已有数据的数据库上再次执行安装，因为安装 SQL 会重建业务表。
+- 上传到 `/assets/cache/...` 的图片和文件仍属于容器文件系统。Railway 重新部署后这些文件可能丢失，生产环境建议挂载持久卷或改用对象存储/CDN。
 - 这套部署额外处理了伪静态规则，会把路径改写为程序需要的 `index.php?s=/path` 形式。
 
 ## 更多支持
